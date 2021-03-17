@@ -1,0 +1,29 @@
+
+- hosts: webservers
+  name: Playbook to copy files from remote server to ansible controller. 
+  tasks:
+    - name: Taking input from variable file.
+      include_vars: input_vars.yml       # Name of the variable file
+    - name: Search all files inside the source directory which are cerated in past 30 days
+      find:
+        paths: '{{ src_path }}'          # Source Path
+        age: "-30d"                      # Filters for files, created in past 30 days
+        recurse: yes                     # Check all files and folders recursively 
+        excludes: '*.log,*.out'          # Exclude files with .log & .out extention
+      register: files
+    - name: Compress files in tar.gz by taking input from previous Search task
+      archive:
+        path: '{{ files_to_archive }}'    # Loop for each file
+        dest: '{{ tar_path }}'            # Destination where .tar is will be placed 
+        format: gz
+        force_archive: true
+      vars:
+        files_to_archive: "{{ files.files | map(attribute='path') | list }}"  #Loops through all the files found in first task
+    - name: Copy the zip file from remote machine to local machine
+      fetch:
+        src:  '{{ tar_path }}'            # Copy tar file generated in last task
+        dest: '{{ dest_path }}'           # Destination on Local server
+    - name: Delete the zip file
+      file:
+        path: '{{ tar_path }}'            # Delete tar files from remote system after copy
+        state: absent

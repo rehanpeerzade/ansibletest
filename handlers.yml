@@ -1,0 +1,32 @@
+- hosts: webservers
+  vars:                       #Variables for Different Services
+    db_service: sqld
+    app_service: jboss
+    web_service: httpd
+  tasks:
+    - name: Start DB Service   # If DB Service is started, it will trigger the handler to restart application service
+      service:       
+         name: {{ db_service }}
+         state: started
+      notify:
+        - restart application
+    - name: Check Application Service # If Application Service is Started, it will also restart web service
+      service:
+        name: {{ app_service }}
+        state: started
+      notify:
+        - restart web
+    - name: Check Web Service         # Task to restart Web Service
+      service: 
+        name: {{ web_service }}
+        state: started
+    
+  handlers:
+    - name: restart application
+      service: 
+        name: app_service
+        state: restarted
+    - name: restart web
+      service:
+        name: web_service
+        state: restarted

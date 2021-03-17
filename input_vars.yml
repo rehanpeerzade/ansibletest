@@ -1,0 +1,4 @@
+---
+src_path: "/var/tmp/testfiles"        #Source directory on remote server, from where files are to be copied
+dest_path: "/var/tmp/"                # Directory on Ansible Controller Node, where .tar file needs to be copied
+tar_path: "/tmp/test.tar.gz"          # Temp .tar file location, this will be deleted at the last task
